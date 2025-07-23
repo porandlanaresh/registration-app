@@ -38,7 +38,8 @@ pipeline {
               steps {
                   script { 
                       docker.withRegistry('',DOCKER_PASS) {
-                      sh 'export DOCKER_BUILDKIT=1 && docker build -t nrshub/register-app-pipeline .'
+                         docker_image = docker.build "${IMAGE_NAME}"
+                      
 
                      }
                        docker.withRegistry('',DOCKER_PASS) {
