@@ -11,7 +11,6 @@ pipeline {
            DOCKER_PASS = 'jenkins-token'
            IMAGE_NAME = "${DOCKER_USER}"  +  "/"  + "${APPNAME}"
            IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-           JENKINS_API
         } 
     stages{
         stage("Cleanup Workspace"){
