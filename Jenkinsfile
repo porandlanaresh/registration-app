@@ -1,53 +1,63 @@
 pipeline {
-   agent { label 'jenkins-agent'}
-   tools { 
-       jdk 'java17'
-       maven 'maven3'
+    agent { label 'jenkins-agent' }
+
+    tools { 
+        jdk 'java17'
+        maven 'maven3'
     }
-   environment {
-           APPNAME = "register-app-pipeline"
-           RELEASE = "1.0.0"
-           DOCKER_USER = "nrshub"
-           DOCKER_PASS = 'jenkins-token'
-           IMAGE_NAME = "${DOCKER_USER}"  +  "/"  + "${APPNAME}"
-           IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-        } 
-    stages{
-        stage("Cleanup Workspace"){
-          steps {
-            cleanWs()
+
+    environment {
+        APPNAME = "register-app-pipeline"
+        RELEASE = "1.0.0"
+        DOCKER_USER = "nrshub"
+        DOCKER_TOKEN = "dockertoken"  // ⚠️ For security, store this in Jenkins credentials instead
+        IMAGE_NAME = "${DOCKER_USER}/${APPNAME}"
+        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage("Cleanup Workspace") {
+            steps {
+                cleanWs()
+            }
         }
-     }
-         stage("checkout from SCM"){
-             steps {
+
+        stage("Checkout from SCM") {
+            steps {
                 git branch: 'main', credentialsId: 'github', url: 'https://github.com/porandlanaresh/registration-app.git'
-          }        
-       }
-          stage("Build Application"){
-              steps {
-               sh "mvn clean package"
-           }
+            }
         }
-          stage("Test Application"){
-               steps {
+
+        stage("Build Application") {
+            steps {
+                sh "mvn clean package"
+            }
+        }
+
+        stage("Test Application") {
+            steps {
                 sh "mvn test"
             }
         }
 
-           stage("Build & Push Docker Image") {
-              steps {
-                  script { 
-                      docker.withRegistry('',DOCKER_PASS) {
-                         docker_image = docker.build "${IMAGE_NAME}"
-                      
+        stage("Build & Push Docker Image") {
+            steps {
+                script {
+                    // Build Docker image
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
 
-                     }
-                       docker.withRegistry('',DOCKER_PASS) {
-                           docker_image.push("${IMAGE_TAG}")
-                           docker_image.push('latest')
-                     }
-                  }
-               }
-         }
-  }
+                    // Login to Docker Hub using username and token
+                    sh "echo ${DOCKER_TOKEN} | docker login -u ${DOCKER_USER} --password-stdin"
+
+                    // Push the image
+                    sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                    sh "docker push ${IMAGE_NAME}:latest"
+
+                    // Optional: Logout
+                    sh "docker logout"
+                }
+            }
+        }
+    }
 }
