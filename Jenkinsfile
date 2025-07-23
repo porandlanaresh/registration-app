@@ -8,9 +8,10 @@ pipeline {
            APPNAME = "register-app-pipeline"
            RELEASE = "1.0.0"
            DOCKER_USER = "nrshub"
-           DOCKER_PASS = 'dockerhub'
+           DOCKER_PASS = 'jenkins-token'
            IMAGE_NAME = "${DOCKER_USER}"  +  "/"  + "${APPNAME}"
            IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+           JENKINS_API
         } 
     stages{
         stage("Cleanup Workspace"){
