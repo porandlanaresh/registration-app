@@ -10,7 +10,7 @@ pipeline {
         APPNAME = "register-app-pipeline"
         RELEASE = "1.0.0"
         DOCKER_USER = "nrshub"
-        DOCKER_TOKEN = credentials('dockerhub-token')  // ⚠️ For security, store this in Jenkins credentials instead
+        DOCKER_TOKEN = credentials('dockerhub-token') 
         IMAGE_NAME = "${DOCKER_USER}/${APPNAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
     }
